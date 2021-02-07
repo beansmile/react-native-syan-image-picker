@@ -25,7 +25,7 @@ const defaultOptions = {
     rotateEnabled: true,       // 裁剪是否可旋转图片
     scaleEnabled: true,        // 裁剪是否可放大缩小图片
     compress: true,
-    compressFocusAlpha:false,   //压缩png保留通明度
+    compressFocusAlpha: false,   //压缩png保留通明度
     minimumCompressSize: 100,  // 小于100kb的图片不压缩
     quality: 90,               // 压缩质量
     enableBase64: false,       // 是否返回base64编码，默认不返回
@@ -159,5 +159,25 @@ export default {
             imageCount
         };
         return RNSyanImagePicker.openVideoPicker(optionObj, callback)
+    },
+
+    openVideoCamera(options, callback) {
+        const imageCount = options.videoCount ? options.videoCount : 1
+        const optionObj = {
+            ...defaultOptions,
+            isCamera: false,
+            allowPickingGif: false,
+            allowPickingVideo: true,
+            allowPickingImage: false,
+            allowTakeVideo: true,
+            allowPickingMultipleVideo: imageCount > 1,
+            videoMaximumDuration: 20,
+            MaxSecond: 60,
+            MinSecond: 0,
+            recordVideoSecond: 60,
+            ...options,
+            imageCount
+        };
+        return RNSyanImagePicker.openVideo(optionObj, callback)
     }
 };

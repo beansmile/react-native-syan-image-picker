@@ -1,3 +1,4 @@
+@import MobileCoreServices;
 
 #import "RNSyanImagePicker.h"
 
@@ -82,6 +83,14 @@ RCT_REMAP_METHOD(asyncOpenCamera,
   self.rejectBlock = reject;
   self.callback = nil;
   [self takePhoto];
+}
+
+RCT_EXPORT_METHOD(openVideo:(NSDictionary *)options callback:(RCTResponseSenderBlock)callback) {
+    self.cameraOptions = options;
+    self.callback = callback;
+    self.resolveBlock = nil;
+    self.rejectBlock = nil;
+    [self takeVideo];
 }
 
 RCT_EXPORT_METHOD(deleteCache) {
@@ -315,15 +324,46 @@ RCT_EXPORT_METHOD(openVideoPicker:(NSDictionary *)options callback:(RCTResponseS
             [self takePhoto];
         }];
     } else {
-        [self pushImagePickerController];
+        NSArray<NSString *> *mediaTypes = [[NSArray alloc] initWithObjects: (NSString *) kUTTypeImage, nil];
+        [self pushImagePickerController: mediaTypes];
+    }
+}
+
+- (void)takeVideo {
+    AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+    if (authStatus == AVAuthorizationStatusRestricted || authStatus == AVAuthorizationStatusDenied) {
+        // 无相机权限 做一个友好的提示
+        UIAlertView * alert = [[UIAlertView alloc]initWithTitle:@"无法使用相机" message:@"请在iPhone的""设置-隐私-相机""中允许访问相机" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"设置", nil];
+        [alert show];
+    } else if (authStatus == AVAuthorizationStatusNotDetermined) {
+        // fix issue 466, 防止用户首次拍照拒绝授权时相机页黑屏
+        [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted) {
+            if (granted) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self takePhoto];
+                });
+            }
+        }];
+        // 拍照之前还需要检查相册权限
+    } else if ([PHPhotoLibrary authorizationStatus] == 2) { // 已被拒绝，没有相册权限，将无法保存拍的照片
+        UIAlertView * alert = [[UIAlertView alloc]initWithTitle:@"无法访问相册" message:@"请在iPhone的""设置-隐私-相册""中允许访问相册" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"设置", nil];
+        [alert show];
+    } else if ([PHPhotoLibrary authorizationStatus] == 0) { // 未请求过相册权限
+        [[TZImageManager manager] requestAuthorizationWithCompletion:^{
+            [self takePhoto];
+        }];
+    } else {
+        NSArray<NSString *> *mediaTypes = [[NSArray alloc] initWithObjects: (NSString *) kUTTypeMovie, nil];
+        [self pushImagePickerController: mediaTypes];
     }
 }
 
 // 调用相机
-- (void)pushImagePickerController {
+- (void)pushImagePickerController: (NSArray<NSString *>*) mediaTypes {
     UIImagePickerControllerSourceType sourceType = UIImagePickerControllerSourceTypeCamera;
     if ([UIImagePickerController isSourceTypeAvailable: UIImagePickerControllerSourceTypeCamera]) {
         self.imagePickerVc.sourceType = sourceType;
+        self.imagePickerVc.mediaTypes = mediaTypes;
         [[self topViewController] presentViewController:self.imagePickerVc animated:YES completion:nil];
     } else {
         NSLog(@"模拟器中无法打开照相机,请在真机中使用");
@@ -333,6 +373,7 @@ RCT_EXPORT_METHOD(openVideoPicker:(NSDictionary *)options callback:(RCTResponseS
 - (void)imagePickerController:(UIImagePickerController*)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
     [picker dismissViewControllerAnimated:YES completion:^{
         NSString *type = [info objectForKey:UIImagePickerControllerMediaType];
+
         if ([type isEqualToString:@"public.image"]) {
 
             TZImagePickerController *tzImagePickerVc = [[TZImagePickerController alloc] initWithMaxImagesCount:1 delegate:nil];
@@ -375,6 +416,24 @@ RCT_EXPORT_METHOD(openVideoPicker:(NSDictionary *)options callback:(RCTResponseS
                     }
                 }
             }];
+        } else if ([type isEqualToString:@"public.movie"]) {
+            NSString *fileName = [info[UIImagePickerControllerMediaURL] lastPathComponent];
+            NSString *path = [[NSTemporaryDirectory() stringByStandardizingPath] stringByAppendingPathComponent:fileName];
+
+            UISaveVideoAtPathToSavedPhotosAlbum(path, nil, nil, nil);
+
+
+            NSMutableDictionary *video = [NSMutableDictionary dictionary];
+            video[@"uri"] = path;
+            video[@"fileName"] = fileName;
+            NSInteger size = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:nil].fileSize;
+            video[@"size"] = @(size);
+            video[@"type"] = @"video";
+            video[@"mime"] = @"video/mp4";
+
+            [self invokeSuccessWithResult:@[video]];
+
+
         }
     }];
 }
@@ -453,7 +512,7 @@ RCT_EXPORT_METHOD(openVideoPicker:(NSDictionary *)options callback:(RCTResponseS
     NSMutableString *filePath = [NSMutableString string];
     BOOL isPNG = [fileExtension hasSuffix:@"PNG"] || [fileExtension hasSuffix:@"png"];
     BOOL compressFocusAlpha = [self.cameraOptions sy_boolForKey:@"compressFocusAlpha"];
-    
+
     if (isPNG) {
         [filePath appendString:[NSString stringWithFormat:@"%@SyanImageCaches/%@", NSTemporaryDirectory(), filename]];
     } else {
@@ -492,7 +551,7 @@ RCT_EXPORT_METHOD(openVideoPicker:(NSDictionary *)options callback:(RCTResponseS
     NSMutableString *filePath = [NSMutableString string];
     BOOL isPNG = [fileExtension hasSuffix:@"PNG"] || [fileExtension hasSuffix:@"png"];
     BOOL compressFocusAlpha = [self.cameraOptions sy_boolForKey:@"compressFocusAlpha"];
-    
+
     if (isGIF) {
         image = [UIImage sd_tz_animatedGIFWithData:data];
         writeData = data;
