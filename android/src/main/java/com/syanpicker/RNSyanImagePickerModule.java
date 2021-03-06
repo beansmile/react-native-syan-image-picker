@@ -272,6 +272,7 @@ public class RNSyanImagePickerModule extends ReactContextBaseJavaModule {
         int recordVideoSecond = this.cameraOptions.getInt("recordVideoSecond");
         int imageCount = this.cameraOptions.getInt("imageCount");
         Activity currentActivity = getCurrentActivity();
+        Boolean isAndroidQ = SdkVersionUtils.checkedAndroid_Q();
         PictureSelector.create(currentActivity)
                 .openCamera(PictureMimeType.ofVideo())//全部.PictureMimeType.ofAll()、图片.ofImage()、视频.ofVideo()、音频.ofAudio()
                 .loadImageEngine(GlideEngine.createGlideEngine())
@@ -286,6 +287,7 @@ public class RNSyanImagePickerModule extends ReactContextBaseJavaModule {
                 .videoMaxSecond(MaxSecond)// 显示多少秒以内的视频or音频也可适用 int
                 .videoMinSecond(MinSecond)// 显示多少秒以内的视频or音频也可适用 int
                 .recordVideoSecond(recordVideoSecond)//视频秒数录制 默认60s int
+                .isAndroidQTransform(isAndroidQ)
                 .forResult(PictureConfig.REQUEST_CAMERA);//结果回调onActivityResult code
     }
 
@@ -301,7 +303,9 @@ public class RNSyanImagePickerModule extends ReactContextBaseJavaModule {
         boolean isCamera = this.cameraOptions.getBoolean("allowTakeVideo");
 
         Activity currentActivity = getCurrentActivity();
-        PictureSelector.create(currentActivity)
+      Boolean isAndroidQ = SdkVersionUtils.checkedAndroid_Q();
+
+      PictureSelector.create(currentActivity)
                 .openGallery(PictureMimeType.ofVideo())//全部.PictureMimeType.ofAll()、图片.ofImage()、视频.ofVideo()、音频.ofAudio()
                 .loadImageEngine(GlideEngine.createGlideEngine())
                 .selectionMedia(selectList) // 当前已选中的视频 List
@@ -316,6 +320,7 @@ public class RNSyanImagePickerModule extends ReactContextBaseJavaModule {
                 .videoMaxSecond(MaxSecond)// 显示多少秒以内的视频or音频也可适用 int
                 .videoMinSecond(MinSecond)// 显示多少秒以内的视频or音频也可适用 int
                 .recordVideoSecond(recordVideoSecond)//视频秒数录制 默认60s int
+                .isAndroidQTransform(isAndroidQ)
                 .forResult(PictureConfig.REQUEST_CAMERA);//结果回调onActivityResult code
     }
 
@@ -357,8 +362,8 @@ public class RNSyanImagePickerModule extends ReactContextBaseJavaModule {
                 WritableMap videoMap = new WritableNativeMap();
 
                 Boolean isAndroidQ = SdkVersionUtils.checkedAndroid_Q();
-                String filePath = isAndroidQ ? media.getAndroidQToPath() : media.getPath();
 
+                String filePath = isAndroidQ ? media.getAndroidQToPath() : media.getPath();
                 videoMap.putString("uri", "file://" + filePath);
                 videoMap.putString("coverUri", "file://" + this.getVideoCover(filePath));
                 videoMap.putString("fileName", new File(media.getPath()).getName());
