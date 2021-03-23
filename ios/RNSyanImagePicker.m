@@ -187,7 +187,7 @@ RCT_EXPORT_METHOD(openVideoPicker:(NSDictionary *)options callback:(RCTResponseS
 
     [imagePickerVc setDidFinishPickingVideoHandle:^(UIImage *coverImage, PHAsset *asset) {
         [weakPicker showProgressHUD];
-        [[TZImageManager manager] getVideoOutputPathWithAsset:asset presetName:AVAssetExportPresetHighestQuality success:^(NSString *outputPath) {
+        [[TZImageManager manager] getVideoOutputPathWithAsset:asset presetName:AVAssetExportPreset1280x720 success:^(NSString *outputPath) {
             NSLog(@"视频导出成功:%@", outputPath);
             callback(@[[NSNull null], @[[self handleVideoData:outputPath asset:asset coverImage:coverImage quality:quality]]]);
             [weakPicker dismissViewControllerAnimated:YES completion:nil];
