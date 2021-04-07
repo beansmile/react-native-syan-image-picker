@@ -151,6 +151,7 @@ RCT_EXPORT_METHOD(openVideoPicker:(NSDictionary *)options callback:(RCTResponseS
     imagePickerVc.allowCrop = isCrop;   // 裁剪
     imagePickerVc.autoDismiss = NO;
     imagePickerVc.showSelectedIndex = showSelectedIndex;
+    imagePickerVc.timeout = 60;
     imagePickerVc.modalPresentationStyle = UIModalPresentationFullScreen;
 
     if (isRecordSelected) {
