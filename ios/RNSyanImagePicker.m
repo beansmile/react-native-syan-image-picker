@@ -117,7 +117,6 @@ RCT_EXPORT_METHOD(openVideoPicker:(NSDictionary *)options callback:(RCTResponseS
 
 - (void)openTZImagePicker:(NSDictionary *)options callback:(RCTResponseSenderBlock)callback {
     NSInteger imageCount = [options sy_integerForKey:@"imageCount"];
-    BOOL isCamera        = [options sy_boolForKey:@"isCamera"];
     BOOL isCrop          = [options sy_boolForKey:@"isCrop"];
     BOOL isGif = [options sy_boolForKey:@"isGif"];
     BOOL allowPickingVideo = [options sy_boolForKey:@"allowPickingVideo"];
@@ -132,18 +131,16 @@ RCT_EXPORT_METHOD(openVideoPicker:(NSDictionary *)options callback:(RCTResponseS
     NSInteger CropW      = [options sy_integerForKey:@"CropW"];
     NSInteger CropH      = [options sy_integerForKey:@"CropH"];
     NSInteger circleCropRadius = [options sy_integerForKey:@"circleCropRadius"];
-    NSInteger videoMaximumDuration = [options sy_integerForKey:@"videoMaximumDuration"];
     NSInteger   quality  = [self.cameraOptions sy_integerForKey:@"quality"];
 
     TZImagePickerController *imagePickerVc = [[TZImagePickerController alloc] initWithMaxImagesCount:imageCount delegate:self];
 
     imagePickerVc.maxImagesCount = imageCount;
     imagePickerVc.allowPickingGif = isGif; // 允许GIF
-    imagePickerVc.allowTakePicture = isCamera; // 允许用户在内部拍照
+    imagePickerVc.allowTakePicture = NO; // 允许用户在内部拍照
     imagePickerVc.allowPickingVideo = allowPickingVideo; // 不允许视频
     imagePickerVc.allowPickingImage = allowPickingImage;
-    imagePickerVc.allowTakeVideo = allowTakeVideo; // 允许拍摄视频
-    imagePickerVc.videoMaximumDuration = videoMaximumDuration;
+    imagePickerVc.allowTakeVideo = NO; // 允许拍摄视频
     imagePickerVc.allowPickingMultipleVideo = isGif || allowPickingMultipleVideo ? YES : NO;
     imagePickerVc.allowPickingOriginalPhoto = allowPickingOriginalPhoto; // 允许原图
     imagePickerVc.sortAscendingByModificationDate = sortAscendingByModificationDate;

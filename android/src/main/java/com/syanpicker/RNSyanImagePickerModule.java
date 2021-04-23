@@ -283,7 +283,7 @@ public class RNSyanImagePickerModule extends ReactContextBaseJavaModule {
                 .imageSpanCount(4)// 每行显示个数 int
                 .selectionMode(PictureConfig.MULTIPLE)// 多选 or 单选 PictureConfig.MULTIPLE or PictureConfig.SINGLE
                 .previewVideo(true)// 是否可预览视频 true or false
-                .videoQuality(quality)// 视频录制质量 0 or 1 int
+                .videoQuality(1)// 视频录制质量 0 or 1 int
                 .videoMaxSecond(MaxSecond)// 显示多少秒以内的视频or音频也可适用 int
                 .videoMinSecond(MinSecond)// 显示多少秒以内的视频or音频也可适用 int
                 .recordVideoSecond(recordVideoSecond)//视频秒数录制 默认60s int
@@ -295,12 +295,10 @@ public class RNSyanImagePickerModule extends ReactContextBaseJavaModule {
      * 选择视频
      */
     private void openVideoPicker() {
-        int quality = this.cameraOptions.getInt("quality");
         int MaxSecond = this.cameraOptions.getInt("MaxSecond");
         int MinSecond = this.cameraOptions.getInt("MinSecond");
         int recordVideoSecond = this.cameraOptions.getInt("recordVideoSecond");
         int videoCount = this.cameraOptions.getInt("imageCount");
-        boolean isCamera = this.cameraOptions.getBoolean("allowTakeVideo");
 
         Activity currentActivity = getCurrentActivity();
       Boolean isAndroidQ = SdkVersionUtils.checkedAndroid_Q();
@@ -310,13 +308,13 @@ public class RNSyanImagePickerModule extends ReactContextBaseJavaModule {
                 .loadImageEngine(GlideEngine.createGlideEngine())
                 .selectionMedia(selectList) // 当前已选中的视频 List
                 .openClickSound(false)// 是否开启点击声音 true or false
-                .isCamera(isCamera)// 是否显示拍照按钮 true or false
+                .isCamera(false)// 是否显示拍照按钮 true or false
                 .maxSelectNum(videoCount)// 最大视频选择数量 int
                 .minSelectNum(1)// 最小选择数量 int
                 .imageSpanCount(4)// 每行显示个数 int
                 .selectionMode(PictureConfig.MULTIPLE)// 多选 or 单选 PictureConfig.MULTIPLE or PictureConfig.SINGLE
                 .previewVideo(true)// 是否可预览视频 true or false
-                .videoQuality(quality)// 视频录制质量 0 or 1 int
+                .videoQuality(1)// 视频录制质量 0 or 1 int
                 .videoMaxSecond(MaxSecond)// 显示多少秒以内的视频or音频也可适用 int
                 .videoMinSecond(MinSecond)// 显示多少秒以内的视频or音频也可适用 int
                 .recordVideoSecond(recordVideoSecond)//视频秒数录制 默认60s int
